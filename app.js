@@ -114,8 +114,9 @@ const editDefinitions = {
 let state = loadState();
 let activeEditDefinition = null;
 let lastRenderedTimecode = "";
-let clapSoundTimer = 0;
 let clapResetTimer = 0;
+let clapAudioContext = null;
+let clapNoiseBuffer = null;
 
 const elements = {
   viewButtons: document.querySelectorAll("[data-view-target]"),
@@ -463,40 +464,57 @@ function normalizeTake(value) {
 }
 
 function clap() {
-  window.clearTimeout(clapSoundTimer);
   window.clearTimeout(clapResetTimer);
+  const clapSound = prepareClapTone();
   elements.slateBoard.classList.remove("is-clapping");
   void elements.slateBoard.offsetWidth;
   elements.slateBoard.classList.add("is-clapping");
-  clapSoundTimer = window.setTimeout(playClapTone, CLAP_CLOSE_MS);
+  playClapTone(clapSound, CLAP_CLOSE_MS / 1000);
   clapResetTimer = window.setTimeout(() => {
     elements.slateBoard.classList.remove("is-clapping");
   }, CLAP_RESET_MS);
 }
 
-function playClapTone() {
+function prepareClapTone() {
   const AudioContext = window.AudioContext || window.webkitAudioContext;
-  if (!AudioContext) return;
+  if (!AudioContext) return null;
 
-  const context = new AudioContext();
-  const duration = 0.14;
-  const bufferSize = Math.floor(context.sampleRate * duration);
-  const noiseBuffer = context.createBuffer(1, bufferSize, context.sampleRate);
-  const output = noiseBuffer.getChannelData(0);
-  for (let i = 0; i < bufferSize; i += 1) {
-    const decay = 1 - i / bufferSize;
-    output[i] = (Math.random() * 2 - 1) * decay * decay;
+  if (!clapAudioContext) {
+    clapAudioContext = new AudioContext();
   }
 
+  const context = clapAudioContext;
+  if (context.state === "suspended") {
+    context.resume();
+  }
+  const duration = 0.14;
+  if (!clapNoiseBuffer || clapNoiseBuffer.sampleRate !== context.sampleRate) {
+    const bufferSize = Math.floor(context.sampleRate * duration);
+    clapNoiseBuffer = context.createBuffer(1, bufferSize, context.sampleRate);
+    const output = clapNoiseBuffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i += 1) {
+      const decay = 1 - i / bufferSize;
+      output[i] = (Math.random() * 2 - 1) * decay * decay;
+    }
+  }
+
+  return { context, duration, noiseBuffer: clapNoiseBuffer };
+}
+
+function playClapTone(clapSound, delaySeconds = 0) {
+  if (!clapSound) return;
+
+  const { context, duration, noiseBuffer } = clapSound;
+  const startTime = context.currentTime + delaySeconds;
   const noise = context.createBufferSource();
   const noiseGain = context.createGain();
   const noiseFilter = context.createBiquadFilter();
   noise.buffer = noiseBuffer;
   noiseFilter.type = "highpass";
-  noiseFilter.frequency.setValueAtTime(900, context.currentTime);
-  noiseGain.gain.setValueAtTime(0.0001, context.currentTime);
-  noiseGain.gain.exponentialRampToValueAtTime(0.85, context.currentTime + 0.006);
-  noiseGain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + duration);
+  noiseFilter.frequency.setValueAtTime(900, startTime);
+  noiseGain.gain.setValueAtTime(0.0001, startTime);
+  noiseGain.gain.exponentialRampToValueAtTime(0.85, startTime + 0.006);
+  noiseGain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
   noise.connect(noiseFilter);
   noiseFilter.connect(noiseGain);
   noiseGain.connect(context.destination);
@@ -504,17 +522,17 @@ function playClapTone() {
   const oscillator = context.createOscillator();
   const gain = context.createGain();
   oscillator.type = "triangle";
-  oscillator.frequency.setValueAtTime(180, context.currentTime);
-  oscillator.frequency.exponentialRampToValueAtTime(72, context.currentTime + 0.08);
-  gain.gain.setValueAtTime(0.0001, context.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.55, context.currentTime + 0.008);
-  gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.11);
+  oscillator.frequency.setValueAtTime(180, startTime);
+  oscillator.frequency.exponentialRampToValueAtTime(72, startTime + 0.08);
+  gain.gain.setValueAtTime(0.0001, startTime);
+  gain.gain.exponentialRampToValueAtTime(0.55, startTime + 0.008);
+  gain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.11);
   oscillator.connect(gain);
   gain.connect(context.destination);
-  noise.start();
-  oscillator.start();
-  noise.stop(context.currentTime + duration);
-  oscillator.stop(context.currentTime + 0.12);
+  noise.start(startTime);
+  oscillator.start(startTime);
+  noise.stop(startTime + duration);
+  oscillator.stop(startTime + 0.12);
 }
 
 function tickTimecode() {
