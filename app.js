@@ -1,7 +1,7 @@
 const storageScope = new URLSearchParams(window.location.search).get("storage");
 const STORAGE_KEY = `slate-board-app-state-v3${storageScope ? `-${storageScope}` : ""}`;
-const CLAP_CONTACT_MS = 150;
-const CLAP_ANIMATION_MS = 280;
+const CLAP_CLOSE_MS = 220;
+const CLAP_RESET_MS = 260;
 
 const defaultState = {
   project: {
@@ -468,10 +468,10 @@ function clap() {
   elements.slateBoard.classList.remove("is-clapping");
   void elements.slateBoard.offsetWidth;
   elements.slateBoard.classList.add("is-clapping");
-  clapSoundTimer = window.setTimeout(playClapTone, CLAP_CONTACT_MS);
+  clapSoundTimer = window.setTimeout(playClapTone, CLAP_CLOSE_MS);
   clapResetTimer = window.setTimeout(() => {
     elements.slateBoard.classList.remove("is-clapping");
-  }, CLAP_ANIMATION_MS);
+  }, CLAP_RESET_MS);
 }
 
 function playClapTone() {
