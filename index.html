@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>場記板</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <h1>場記板</h1>
+      <nav class="view-tabs" aria-label="主要頁面">
+        <button class="tab-button is-active" data-view-target="slate" type="button">場記板</button>
+        <button class="tab-button" data-view-target="data" type="button">資料</button>
+        <button class="tab-button" data-view-target="records" type="button">紀錄</button>
+      </nav>
+    </header>
+
+    <main>
+      <section class="view view-slate is-active" id="view-slate" aria-labelledby="slateTitle">
+        <h2 class="sr-only" id="slateTitle">場記板畫面</h2>
+        <div class="slate-stage">
+          <div class="slate-board" id="slateBoard" tabindex="0" aria-label="場記板">
+            <div class="clapper-space" aria-hidden="true">
+              <div class="stripe"></div>
+            </div>
+
+            <div class="slate-top">
+              <button class="slate-field title-field" data-edit="production" type="button">
+                <span>片名</span>
+                <strong id="displayProduction">未命名專案</strong>
+              </button>
+              <button class="slate-field date-field" data-edit="date" type="button">
+                <span>日期</span>
+                <strong id="displayDate">--</strong>
+              </button>
+            </div>
+
+            <div class="slate-grid slate-grid-main">
+              <button class="slate-field" data-edit="scene" type="button">
+                <span>場次</span>
+                <strong id="displayScene">1</strong>
+              </button>
+              <button class="slate-field" data-edit="shot" type="button">
+                <span>鏡號</span>
+                <strong id="displayShot">1</strong>
+              </button>
+              <button class="slate-field" data-edit="take" type="button">
+                <span>次數</span>
+                <strong id="displayTake">1</strong>
+              </button>
+            </div>
+
+            <div class="slate-grid slate-grid-meta">
+              <button class="slate-field" data-edit="roll" type="button">
+                <span>卷卡</span>
+                <strong id="displayRoll">A001</strong>
+              </button>
+              <button class="slate-field" data-edit="fps" type="button">
+                <span>格率</span>
+                <strong id="displayFps">24</strong>
+              </button>
+              <button class="slate-field" data-edit="mode" type="button">
+                <span>景別</span>
+                <strong id="displayMode">內景 / 日</strong>
+              </button>
+              <button class="slate-field" data-edit="sound" type="button">
+                <span>收音</span>
+                <strong id="displaySound">有聲同步</strong>
+              </button>
+            </div>
+
+            <div class="slate-grid slate-grid-footer">
+              <button class="slate-field" data-edit="director" type="button">
+                <span>導演</span>
+                <strong id="displayDirector">--</strong>
+              </button>
+              <button class="slate-field" data-edit="camera" type="button">
+                <span>攝影機</span>
+                <strong id="displayCamera">A 機</strong>
+              </button>
+              <div class="slate-field readonly-field">
+                <span>時碼</span>
+                <strong id="displayTimecode">00:00:00:00</strong>
+              </div>
+            </div>
+
+            <div class="clap-line" aria-hidden="true"></div>
+          </div>
+
+          <div class="slate-toolbar" aria-label="場記板操作">
+            <button id="clapButton" type="button">打板</button>
+            <button class="secondary" id="recordButton" type="button">記錄並下一次</button>
+            <button class="secondary" id="newShotButton" type="button">下一鏡</button>
+            <button class="secondary" id="openDataButton" type="button">資料</button>
+            <button class="secondary" id="openRecordsButton" type="button">紀錄</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="view view-data" id="view-data" aria-labelledby="dataTitle">
+        <div class="page-heading">
+          <div>
+            <h2 id="dataTitle">資料</h2>
+            <p>專案資料與場記欄位</p>
+          </div>
+          <button class="danger" id="resetButton" type="button">清空資料</button>
+        </div>
+
+        <div class="data-layout">
+          <section class="panel" aria-labelledby="projectTitle">
+            <div class="section-heading">
+              <h3 id="projectTitle">專案資料</h3>
+            </div>
+            <form class="form-grid" id="projectForm">
+              <label>
+                <span>片名</span>
+                <input data-project="production" type="text" placeholder="例：短片 A" />
+              </label>
+              <label>
+                <span>導演</span>
+                <input data-project="director" type="text" placeholder="導演姓名" />
+              </label>
+              <label>
+                <span>攝影</span>
+                <input data-project="dop" type="text" placeholder="攝影姓名" />
+              </label>
+              <label>
+                <span>日期</span>
+                <input data-project="date" type="date" />
+              </label>
+              <label class="wide">
+                <span>地點</span>
+                <input data-project="location" type="text" placeholder="拍攝地點" />
+              </label>
+            </form>
+          </section>
+
+          <section class="panel" aria-labelledby="controlTitle">
+            <div class="section-heading split">
+              <h3 id="controlTitle">場記資訊</h3>
+              <div class="compact-actions">
+                <button class="secondary" id="newSceneButton" type="button">下一場</button>
+                <button class="secondary" id="resetTakeButton" type="button">次數歸 1</button>
+                <button class="secondary" id="nextTakeButton" type="button">下一次</button>
+              </div>
+            </div>
+
+            <form class="form-grid" id="slateForm">
+              <label>
+                <span>場次</span>
+                <input data-slate="scene" type="text" inputmode="text" />
+              </label>
+              <label>
+                <span>鏡號</span>
+                <input data-slate="shot" type="text" inputmode="text" />
+              </label>
+              <label>
+                <span>次數</span>
+                <input data-slate="take" type="number" min="1" />
+              </label>
+              <label>
+                <span>卷卡</span>
+                <input data-slate="roll" type="text" />
+              </label>
+              <label>
+                <span>格率</span>
+                <select data-slate="fps">
+                  <option value="23.976">23.976</option>
+                  <option value="24">24</option>
+                  <option value="25">25</option>
+                  <option value="29.97">29.97</option>
+                  <option value="30">30</option>
+                  <option value="50">50</option>
+                  <option value="60">60</option>
+                </select>
+              </label>
+              <label>
+                <span>內外景</span>
+                <select data-slate="intExt">
+                  <option value="內景">內景</option>
+                  <option value="外景">外景</option>
+                  <option value="內外景">內外景</option>
+                </select>
+              </label>
+              <label>
+                <span>日夜</span>
+                <select data-slate="dayNight">
+                  <option value="日">日</option>
+                  <option value="夜">夜</option>
+                  <option value="黎明">黎明</option>
+                  <option value="黃昏">黃昏</option>
+                </select>
+              </label>
+              <label>
+                <span>收音</span>
+                <select data-slate="sound">
+                  <option value="有聲同步">有聲同步</option>
+                  <option value="無聲">無聲</option>
+                  <option value="野聲">野聲</option>
+                  <option value="播放">播放</option>
+                </select>
+              </label>
+              <label>
+                <span>攝影機</span>
+                <input data-slate="camera" type="text" />
+              </label>
+              <label>
+                <span>聲音檔</span>
+                <input data-slate="soundFile" type="text" placeholder="例：A001_T001.wav" />
+              </label>
+            </form>
+          </section>
+        </div>
+      </section>
+
+      <section class="view view-records" id="view-records" aria-labelledby="logTitle">
+        <div class="page-heading">
+          <div>
+            <h2 id="logTitle">拍攝紀錄</h2>
+            <p>每一次拍攝的狀態、備註與交接輸出</p>
+          </div>
+          <div class="header-actions">
+            <button class="secondary" id="exportCsvButton" type="button">匯出 CSV</button>
+            <button class="secondary" id="exportJsonButton" type="button">匯出 JSON</button>
+            <button class="secondary" id="printButton" type="button">列印</button>
+          </div>
+        </div>
+
+        <section class="panel">
+          <div class="section-heading split">
+            <div class="stats" aria-label="拍攝統計">
+              <span id="totalCount">0 次</span>
+              <span id="circleCount">0 圈選</span>
+              <span id="goodCount">0 可用</span>
+            </div>
+          </div>
+
+          <div class="log-controls">
+            <label>
+              <span>狀態</span>
+              <select id="statusInput">
+                <option value="圈選">圈選</option>
+                <option value="可用">可用</option>
+                <option value="NG">NG</option>
+                <option value="保留">保留</option>
+              </select>
+            </label>
+            <label class="wide">
+              <span>備註</span>
+              <input id="noteInput" type="text" placeholder="例：導演選用、收音雜音、焦點偏軟" />
+            </label>
+            <label>
+              <span>篩選</span>
+              <select id="filterInput">
+                <option value="全部">全部</option>
+                <option value="圈選">圈選</option>
+                <option value="可用">可用</option>
+                <option value="NG">NG</option>
+                <option value="保留">保留</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>時間</th>
+                  <th>場次</th>
+                  <th>鏡號</th>
+                  <th>次數</th>
+                  <th>狀態</th>
+                  <th>卷卡</th>
+                  <th>收音</th>
+                  <th>備註</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="recordsBody"></tbody>
+            </table>
+            <p class="empty-state" id="emptyState">尚無拍攝紀錄。</p>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <div class="edit-modal" id="editModal" hidden role="dialog" aria-modal="true" aria-labelledby="editTitle">
+      <div class="edit-card">
+        <form id="editForm">
+          <div class="edit-heading">
+            <h2 id="editTitle">修改</h2>
+            <button class="icon-button" id="closeEditButton" type="button" aria-label="關閉">×</button>
+          </div>
+          <div class="edit-controls" id="editControls"></div>
+          <div class="edit-actions">
+            <button class="secondary" id="cancelEditButton" type="button">取消</button>
+            <button id="saveEditButton" type="submit">儲存</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
