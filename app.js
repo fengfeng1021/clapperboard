@@ -287,8 +287,8 @@ function bindEvents() {
     state.settings.clapSound = elements.clapSoundSelect.value;
     saveState();
   });
-  elements.testClapSoundButton.addEventListener("click", () => {
-    playClapTone(prepareClapTone(), 0);
+  elements.testClapSoundButton.addEventListener("click", async () => {
+    playClapTone(await prepareClapTone(), 0);
   });
   elements.exportCsvButton.addEventListener("click", exportCsv);
   elements.exportJsonButton.addEventListener("click", exportJson);
@@ -302,7 +302,12 @@ function bindEvents() {
   });
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && !elements.editModal.hidden) closeEditor();
+    preventPageZoom(event);
   });
+  document.addEventListener("wheel", preventWheelZoom, { passive: false });
+  document.addEventListener("gesturestart", preventGestureZoom);
+  document.addEventListener("gesturechange", preventGestureZoom);
+  document.addEventListener("gestureend", preventGestureZoom);
   window.addEventListener("resize", fitSlateText);
 }
 
@@ -755,9 +760,24 @@ function fitSlateText() {
   });
 }
 
-function clap() {
+function preventPageZoom(event) {
+  if (!event.ctrlKey && !event.metaKey) return;
+  if (!["+", "-", "=", "0"].includes(event.key)) return;
+  event.preventDefault();
+}
+
+function preventWheelZoom(event) {
+  if (!event.ctrlKey && !event.metaKey) return;
+  event.preventDefault();
+}
+
+function preventGestureZoom(event) {
+  event.preventDefault();
+}
+
+async function clap() {
   window.clearTimeout(clapResetTimer);
-  const clapSound = prepareClapTone();
+  const clapSound = await prepareClapTone();
   elements.slateBoard.classList.remove("is-clapping");
   void elements.slateBoard.offsetWidth;
   elements.slateBoard.classList.add("is-clapping");
@@ -767,7 +787,7 @@ function clap() {
   }, CLAP_RESET_MS);
 }
 
-function prepareClapTone() {
+async function prepareClapTone() {
   const AudioContext = window.AudioContext || window.webkitAudioContext;
   if (!AudioContext) return null;
 
@@ -777,7 +797,7 @@ function prepareClapTone() {
 
   const context = clapAudioContext;
   if (context.state === "suspended") {
-    context.resume();
+    await context.resume();
   }
 
   return { context };
