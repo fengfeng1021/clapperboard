@@ -2,6 +2,7 @@ const storageScope = new URLSearchParams(window.location.search).get("storage");
 const STORAGE_KEY = `slate-board-app-state-v3${storageScope ? `-${storageScope}` : ""}`;
 const CLAP_CLOSE_MS = 220;
 const CLAP_RESET_MS = 260;
+const CLAP_VOLUME_MULTIPLIER = 3;
 
 const slateFieldDefinitions = [
   { key: "scene", title: "場次", label: "場次", type: "text", inputMode: "text", options: ["1", "2", "3"] },
@@ -148,6 +149,7 @@ const elements = {
   openRecordsButton: document.querySelector("#openRecordsButton"),
   resetButton: document.querySelector("#resetButton"),
   statusInput: document.querySelector("#statusInput"),
+  logSoundFileInput: document.querySelector("#logSoundFileInput"),
   noteInput: document.querySelector("#noteInput"),
   filterInput: document.querySelector("#filterInput"),
   recordsBody: document.querySelector("#recordsBody"),
@@ -274,6 +276,11 @@ function bindEvents() {
   elements.resetTakeButton.addEventListener("click", () => setTake(1));
   elements.openDataButton.addEventListener("click", () => setView("data"));
   elements.openRecordsButton.addEventListener("click", () => setView("records"));
+  elements.logSoundFileInput.addEventListener("input", () => {
+    state.slate.soundFile = elements.logSoundFileInput.value;
+    saveState();
+    renderSlate();
+  });
   elements.noteInput.addEventListener("input", () => resizeTextarea(elements.noteInput));
   elements.filterInput.addEventListener("change", renderRecords);
   elements.clapSoundSelect.addEventListener("change", () => {
@@ -318,6 +325,7 @@ function renderInputs() {
   elements.projectInputs.forEach((input) => {
     input.value = state.project[input.dataset.project] ?? "";
   });
+  elements.logSoundFileInput.value = state.slate.soundFile ?? "";
   renderSlateForm();
   renderSettings();
 }
@@ -440,6 +448,7 @@ function handleSlateControlInput(event) {
   state.slate[key] = key === "take" ? normalizeTake(control.value) : control.value;
   saveState();
   renderSlate();
+  if (key === "soundFile") elements.logSoundFileInput.value = state.slate.soundFile ?? "";
   if (control.tagName === "TEXTAREA") resizeTextarea(control);
 }
 
@@ -629,7 +638,7 @@ function recordTake() {
     dayNight: state.slate.dayNight,
     sound: state.slate.sound,
     camera: state.slate.camera,
-    soundFile: state.slate.soundFile,
+    soundFile: elements.logSoundFileInput.value.trim() || state.slate.soundFile,
     status: elements.statusInput.value,
     note: elements.noteInput.value.trim(),
   };
@@ -792,7 +801,9 @@ function playClapTone(clapSound, delaySeconds = 0) {
   noiseGain.gain.exponentialRampToValueAtTime(0.0001, startTime + profile.duration);
   noise.connect(noiseFilter);
   noiseFilter.connect(noiseGain);
-  noiseGain.connect(context.destination);
+  const masterGain = context.createGain();
+  masterGain.gain.setValueAtTime(CLAP_VOLUME_MULTIPLIER, startTime);
+  noiseGain.connect(masterGain);
 
   const oscillator = context.createOscillator();
   const gain = context.createGain();
@@ -803,7 +814,8 @@ function playClapTone(clapSound, delaySeconds = 0) {
   gain.gain.exponentialRampToValueAtTime(profile.toneGain, startTime + profile.attack);
   gain.gain.exponentialRampToValueAtTime(0.0001, startTime + profile.toneDuration);
   oscillator.connect(gain);
-  gain.connect(context.destination);
+  gain.connect(masterGain);
+  masterGain.connect(context.destination);
   noise.start(startTime);
   oscillator.start(startTime);
   noise.stop(startTime + profile.duration);
