@@ -13,6 +13,7 @@
         <button class="tab-button is-active" data-view-target="slate" type="button">場記板</button>
         <button class="tab-button" data-view-target="data" type="button">資料</button>
         <button class="tab-button" data-view-target="records" type="button">紀錄</button>
+        <button class="tab-button" data-view-target="settings" type="button">設定</button>
       </nav>
     </header>
 
@@ -53,11 +54,11 @@
 
             <div class="slate-grid slate-grid-meta">
               <button class="slate-field" data-edit="roll" type="button">
-                <span>卷卡</span>
+                <span>記憶卡</span>
                 <strong id="displayRoll">A001</strong>
               </button>
               <button class="slate-field" data-edit="fps" type="button">
-                <span>格率</span>
+                <span>影格率</span>
                 <strong id="displayFps">24</strong>
               </button>
               <button class="slate-field" data-edit="mode" type="button">
@@ -146,70 +147,7 @@
               </div>
             </div>
 
-            <form class="form-grid" id="slateForm">
-              <label>
-                <span>場次</span>
-                <input data-slate="scene" type="text" inputmode="text" />
-              </label>
-              <label>
-                <span>鏡號</span>
-                <input data-slate="shot" type="text" inputmode="text" />
-              </label>
-              <label>
-                <span>次數</span>
-                <input data-slate="take" type="number" min="1" />
-              </label>
-              <label>
-                <span>卷卡</span>
-                <input data-slate="roll" type="text" />
-              </label>
-              <label>
-                <span>格率</span>
-                <select data-slate="fps">
-                  <option value="23.976">23.976</option>
-                  <option value="24">24</option>
-                  <option value="25">25</option>
-                  <option value="29.97">29.97</option>
-                  <option value="30">30</option>
-                  <option value="50">50</option>
-                  <option value="60">60</option>
-                </select>
-              </label>
-              <label>
-                <span>內外景</span>
-                <select data-slate="intExt">
-                  <option value="內景">內景</option>
-                  <option value="外景">外景</option>
-                  <option value="內外景">內外景</option>
-                </select>
-              </label>
-              <label>
-                <span>日夜</span>
-                <select data-slate="dayNight">
-                  <option value="日">日</option>
-                  <option value="夜">夜</option>
-                  <option value="黎明">黎明</option>
-                  <option value="黃昏">黃昏</option>
-                </select>
-              </label>
-              <label>
-                <span>收音</span>
-                <select data-slate="sound">
-                  <option value="有聲同步">有聲同步</option>
-                  <option value="無聲">無聲</option>
-                  <option value="野聲">野聲</option>
-                  <option value="播放">播放</option>
-                </select>
-              </label>
-              <label>
-                <span>攝影機</span>
-                <input data-slate="camera" type="text" />
-              </label>
-              <label>
-                <span>聲音檔</span>
-                <input data-slate="soundFile" type="text" placeholder="例：A001_T001.wav" />
-              </label>
-            </form>
+            <form class="form-grid" id="slateForm"></form>
           </section>
         </div>
       </section>
@@ -218,7 +156,7 @@
         <div class="page-heading">
           <div>
             <h2 id="logTitle">拍攝紀錄</h2>
-            <p>每一次拍攝的狀態、備註與交接輸出</p>
+            <p>每一次拍攝的狀態、場記與交接輸出</p>
           </div>
           <div class="header-actions">
             <button class="secondary" id="exportCsvButton" type="button">匯出 CSV</button>
@@ -227,8 +165,12 @@
           </div>
         </div>
 
-        <section class="panel">
+        <section class="panel record-panel">
           <div class="section-heading split">
+            <div>
+              <h3>場記快記</h3>
+              <p>核對目前場次後，輸入現場狀況並直接記錄下一次。</p>
+            </div>
             <div class="stats" aria-label="拍攝統計">
               <span id="totalCount">0 次</span>
               <span id="circleCount">0 圈選</span>
@@ -236,27 +178,59 @@
             </div>
           </div>
 
-          <div class="log-controls">
-            <label>
-              <span>狀態</span>
-              <select id="statusInput">
-                <option value="圈選">圈選</option>
-                <option value="可用">可用</option>
-                <option value="NG">NG</option>
-                <option value="保留">保留</option>
-              </select>
-            </label>
-            <label class="wide">
-              <span>備註</span>
-              <input id="noteInput" type="text" placeholder="例：導演選用、收音雜音、焦點偏軟" />
-            </label>
+          <div class="log-workspace">
+            <div class="current-take-strip" aria-label="目前拍攝資訊">
+              <div>
+                <span>場次</span>
+                <strong id="recordingScene">1</strong>
+              </div>
+              <div>
+                <span>鏡號</span>
+                <strong id="recordingShot">1</strong>
+              </div>
+              <div>
+                <span>次數</span>
+                <strong id="recordingTake">1</strong>
+              </div>
+              <div>
+                <span>記憶卡 / 收音</span>
+                <strong id="recordingMeta">A001 / 有聲同步</strong>
+              </div>
+            </div>
+
+            <div class="log-controls">
+              <label>
+                <span>狀態</span>
+                <select id="statusInput">
+                  <option value="圈選">圈選</option>
+                  <option value="可用">可用</option>
+                  <option value="不採用">不採用</option>
+                  <option value="保留">保留</option>
+                </select>
+              </label>
+              <label class="note-entry">
+                <span>場記備註</span>
+                <textarea id="noteInput" rows="4" placeholder="例：導演選用、收音雜音、焦點偏軟、表演延續、需要補特寫"></textarea>
+              </label>
+              <div class="log-actions">
+                <button id="logRecordButton" type="button">記錄並下一次</button>
+                <button class="secondary" id="logNextTakeButton" type="button">下一次</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="record-toolbar">
+            <div>
+              <h3>拍攝清單</h3>
+              <p>列表中的場記備註可直接修改，會自動保存。</p>
+            </div>
             <label>
               <span>篩選</span>
               <select id="filterInput">
                 <option value="全部">全部</option>
                 <option value="圈選">圈選</option>
                 <option value="可用">可用</option>
-                <option value="NG">NG</option>
+                <option value="不採用">不採用</option>
                 <option value="保留">保留</option>
               </select>
             </label>
@@ -271,9 +245,9 @@
                   <th>鏡號</th>
                   <th>次數</th>
                   <th>狀態</th>
-                  <th>卷卡</th>
+                  <th>記憶卡</th>
                   <th>收音</th>
-                  <th>備註</th>
+                  <th class="note-column">場記備註</th>
                   <th></th>
                 </tr>
               </thead>
@@ -282,6 +256,39 @@
             <p class="empty-state" id="emptyState">尚無拍攝紀錄。</p>
           </div>
         </section>
+      </section>
+
+      <section class="view view-settings" id="view-settings" aria-labelledby="settingsTitle">
+        <div class="page-heading">
+          <div>
+            <h2 id="settingsTitle">設定</h2>
+            <p>打板音效與場記欄位的輸入方式。</p>
+          </div>
+        </div>
+
+        <div class="settings-layout">
+          <section class="panel" aria-labelledby="soundSettingsTitle">
+            <div class="section-heading split">
+              <div>
+                <h3 id="soundSettingsTitle">打板聲音</h3>
+                <p>內建十種一聲式音效，可直接試聽。</p>
+              </div>
+              <button class="secondary" id="testClapSoundButton" type="button">試聽</button>
+            </div>
+            <label>
+              <span>音效</span>
+              <select id="clapSoundSelect"></select>
+            </label>
+          </section>
+
+          <section class="panel" aria-labelledby="fieldSettingsTitle">
+            <div class="section-heading">
+              <h3 id="fieldSettingsTitle">欄位自定義</h3>
+              <p>每個場記欄位都可切換手動輸入或選項；選項以換行新增。</p>
+            </div>
+            <div class="field-settings" id="fieldSettings"></div>
+          </section>
+        </div>
       </section>
     </main>
 

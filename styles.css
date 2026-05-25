@@ -37,7 +37,8 @@ body {
 
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
 }
 
@@ -59,6 +60,7 @@ button:hover {
 button:focus-visible,
 input:focus-visible,
 select:focus-visible,
+textarea:focus-visible,
 .slate-board:focus-visible {
   outline: 3px solid rgba(13, 92, 99, 0.3);
   outline-offset: 2px;
@@ -218,7 +220,7 @@ button.danger:hover {
 }
 
 .slate-grid-meta {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: minmax(92px, 0.58fr) minmax(82px, 0.46fr) minmax(150px, 0.9fr) minmax(260px, 1.75fr);
 }
 
 .slate-grid-footer {
@@ -267,16 +269,17 @@ button.danger:hover {
 .slate-field strong {
   display: block;
   overflow: hidden;
+  overflow-wrap: anywhere;
   margin-top: 8px;
   font-weight: 950;
   line-height: 1.12;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .title-field strong,
 .slate-grid-footer strong {
-  overflow: visible;
+  overflow: hidden;
   font-size: clamp(24px, 3.7svh, 48px);
   line-height: 1.16;
   padding-bottom: 0.08em;
@@ -300,7 +303,7 @@ button.danger:hover {
 }
 
 .slate-grid-meta strong {
-  font-size: clamp(26px, 5.2svh, 64px);
+  font-size: clamp(20px, 4.4svh, 54px);
 }
 
 .clap-line {
@@ -405,6 +408,13 @@ button.danger:hover {
   padding: 20px clamp(18px, 4vw, 48px) 48px;
 }
 
+.settings-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.62fr) minmax(420px, 1.38fr);
+  gap: 18px;
+  padding: 20px clamp(18px, 4vw, 48px) 48px;
+}
+
 .panel {
   background: var(--panel);
   border: 1px solid var(--line);
@@ -433,17 +443,104 @@ button.danger:hover {
   gap: 14px;
 }
 
-.form-grid,
-.log-controls {
+.form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
 }
 
+.record-panel {
+  display: grid;
+  gap: 18px;
+}
+
+.record-panel .section-heading {
+  margin-bottom: 0;
+}
+
+.record-panel .section-heading p,
+.record-toolbar p,
+.view-settings .section-heading p {
+  margin: 6px 0 0;
+  color: var(--muted);
+}
+
+.log-workspace {
+  display: grid;
+  gap: 14px;
+}
+
+.current-take-strip {
+  display: grid;
+  grid-template-columns: 0.7fr 0.7fr 0.7fr minmax(220px, 1.9fr);
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: #f7faf6;
+}
+
+.current-take-strip div {
+  min-width: 0;
+  padding: 12px 14px;
+  border-right: 1px solid var(--line);
+}
+
+.current-take-strip div:last-child {
+  border-right: 0;
+}
+
+.current-take-strip span {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.current-take-strip strong {
+  display: block;
+  overflow-wrap: anywhere;
+  font-size: 24px;
+  line-height: 1.15;
+}
+
 .log-controls {
-  grid-template-columns: 180px minmax(260px, 1fr) 160px;
+  display: grid;
+  grid-template-columns: 180px minmax(280px, 1fr) 180px;
+  align-items: stretch;
+  gap: 14px;
+}
+
+.note-entry {
+  display: flex;
+  flex-direction: column;
+}
+
+.note-entry textarea {
+  flex: 1;
+}
+
+.log-actions {
+  display: grid;
+  align-content: end;
+  gap: 10px;
+}
+
+.record-toolbar {
+  display: flex;
+  justify-content: space-between;
   align-items: end;
-  margin-bottom: 14px;
+  gap: 16px;
+  padding-top: 2px;
+}
+
+.record-toolbar h3 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.record-toolbar label {
+  width: min(220px, 100%);
 }
 
 label span {
@@ -455,7 +552,8 @@ label span {
 }
 
 input,
-select {
+select,
+textarea {
   width: 100%;
   min-height: 44px;
   border: 1px solid #cfd6d0;
@@ -463,6 +561,42 @@ select {
   background: #fff;
   color: var(--ink);
   padding: 8px 10px;
+}
+
+textarea {
+  min-height: 96px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.form-grid textarea {
+  min-height: 112px;
+}
+
+.field-settings {
+  display: grid;
+  gap: 14px;
+}
+
+.field-setting {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfa;
+}
+
+.field-setting-head {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) minmax(160px, 220px);
+  align-items: end;
+  gap: 12px;
+}
+
+.field-setting h4 {
+  margin: 0;
+  font-size: 18px;
 }
 
 .wide {
@@ -515,7 +649,7 @@ select {
 
 table {
   width: 100%;
-  min-width: 860px;
+  min-width: 980px;
   border-collapse: collapse;
 }
 
@@ -535,6 +669,25 @@ th {
 }
 
 td {
+  font-size: 14px;
+}
+
+.note-column {
+  min-width: 260px;
+}
+
+.note-cell {
+  width: 32%;
+  min-width: 260px;
+}
+
+.record-note {
+  display: block;
+  min-height: 64px;
+  max-height: 220px;
+  overflow: auto;
+  border-color: #d7ded8;
+  background: #fffdfa;
   font-size: 14px;
 }
 
@@ -642,6 +795,10 @@ tbody tr:last-child td {
     grid-template-columns: 1fr;
   }
 
+  .settings-layout {
+    grid-template-columns: 1fr;
+  }
+
   .page-heading {
     flex-direction: column;
   }
@@ -679,8 +836,28 @@ tbody tr:last-child td {
   .slate-grid-meta,
   .slate-grid-footer,
   .form-grid,
-  .log-controls {
+  .log-controls,
+  .current-take-strip,
+  .field-setting-head {
     grid-template-columns: 1fr;
+  }
+
+  .current-take-strip div {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .current-take-strip div:last-child {
+    border-bottom: 0;
+  }
+
+  .record-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .record-toolbar label {
+    width: 100%;
   }
 
   .date-field strong {
@@ -719,6 +896,8 @@ tbody tr:last-child td {
   .view-data,
   .page-heading,
   .log-controls,
+  .log-workspace,
+  .record-toolbar,
   .delete-record {
     display: none;
   }
